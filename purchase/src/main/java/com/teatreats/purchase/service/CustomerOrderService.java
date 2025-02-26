@@ -59,7 +59,9 @@ public class CustomerOrderService {
         }
 
         totalAmount +=
-            productDTO.getPrice() - productDTO.getPrice() * (double) cartItem.getDiscount() / 100;
+              cartItem.getQuantity() *  (productDTO.getPrice() - productDTO.getPrice() * (double) cartItem.getDiscount() / 100);
+
+        System.out.println("TOTAL PRICE" + totalAmount);
       } catch (Exception e) {
         log.error("Error fetching product details for product ID: " + cartItem.getProductId(), e);
         return Optional.of("Error fetching product details");
