@@ -30,7 +30,6 @@ public class CartItem {
   @NotNull(message = "Product ID cannot be null")
   private int productId;
 
-  @Min(value = 0, message = "Discount cannot be negative")
   private float discount;
 
   @Min(value = 1, message = "Quantity must be at least 1")
@@ -40,5 +39,5 @@ public class CartItem {
 
   @LastModifiedDate private Date updatedAt;
 
-  private boolean inCart;
+//  private boolean inCart;
 }

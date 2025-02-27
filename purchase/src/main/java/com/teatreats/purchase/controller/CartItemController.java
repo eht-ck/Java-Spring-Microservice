@@ -17,7 +17,7 @@ public class CartItemController {
 
   @PostMapping
   public ResponseEntity<CartItem> createCartItem(@Valid @RequestBody CartItem cartItem) {
-    cartItem.setInCart(true);
+//    cartItem.setInCart(true);
     CartItem createdCartItem = cartItemService.createCartItem(cartItem);
     return ResponseEntity.ok(createdCartItem);
   }
