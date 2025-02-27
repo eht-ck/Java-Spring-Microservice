@@ -128,24 +128,27 @@ public class CustomerOrderService {
     return Optional.of("ORDER PLACED!!!!!");
   }
 
-  public Optional<?> cancelOrder(int orderId) {
-    // CANCEL ORDER
+
+  public Optional<?> updateOrderStatus(int orderId, Status status) {
     Optional<CustomerOrder> order = customerOrderRepository.findById(orderId);
-    if(order.get().getStatus() == Status.CANCELLED){
-      return Optional.of("Already Cancelled!!");
-    }
-    order.get().setStatus(Status.CANCELLED);
-    customerOrderRepository.save(order.get());
+    if (order.isPresent()) {
+      CustomerOrder customerOrder = order.get();
+      customerOrder.setStatus(status);
+      customerOrderRepository.save(customerOrder);
 
-    List<OrderItem> orderItemList = orderItemRepository.findAllByOrder_OrderId(orderId);
-    for (OrderItem orderItem : orderItemList) {
-
-      webClient
-          .patch()
-          .uri("http://localhost:8081/api/products/increaseQuantity/" + orderItem.getProductId())
-          .bodyValue(orderItem.getQuantity())
-          .retrieve()
-          .bodyToMono(ProductDTO.class);
+      // If the status is CANCELLED, handle the cancellation logic
+      if (status == Status.CANCELLED) {
+        List<OrderItem> orderItemList = orderItemRepository.findAllByOrder_OrderId(orderId);
+        for (OrderItem orderItem : orderItemList) {
+          webClient
+                  .patch()
+                  .uri("http://localhost:8081/api/products/increaseQuantity/" + orderItem.getProductId())
+                  .bodyValue(orderItem.getQuantity())
+                  .retrieve()
+                  .bodyToMono(ProductDTO.class)
+                  .block(); // Ensure the request is completed
+        }
+      }
     }
     return order;
   }
@@ -155,13 +158,5 @@ public class CustomerOrderService {
     return  customerOrderRepository.findAll();
   }
 
-  public Optional<?> updateOrderStatus(int orderId, Status status) {
-    Optional<CustomerOrder> order = customerOrderRepository.findById(orderId);
-    if (order.isPresent()) {
-      CustomerOrder customerOrder = order.get();
-      customerOrder.setStatus(status);
-      customerOrderRepository.save(customerOrder);
-    }
-    return order;
-  }
+
 }
