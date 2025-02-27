@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.swing.plaf.PanelUI;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/order/orderItem")
