@@ -53,6 +53,30 @@ public class JWTService {
             throw new RuntimeException("Token is expired");
         }
     }
+
+    public boolean validateAllToken(String token, int userId) {
+        try {
+            final int extractedUserId = extractUserId(token);
+            System.out.println(extractedUserId);
+            return extractedUserId == userId  && !isTokenExpired(token);
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException("Token is expired");
+        }
+    }
+    public int validateAndGetUserId(String token) {
+        try {
+            if(!isTokenExpired(token)){
+                final int extractedUserId = extractUserId(token);
+        System.out.println(extractedUserId);
+                return  extractedUserId;
+            }
+            return 0;
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException("Token is expired");
+        }
+    }
+
+
     private  int extractUserId(String token){
         return  extractClaim(token, claims -> claims.get("userId", Integer.class));
 
