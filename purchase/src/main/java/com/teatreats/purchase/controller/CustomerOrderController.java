@@ -5,6 +5,7 @@ import com.teatreats.purchase.entity.Status;
 import com.teatreats.purchase.service.CustomerOrderService;
 import com.teatreats.purchase.service.JWTService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,29 +22,29 @@ public class CustomerOrderController {
 
   @Autowired
   private JWTService jwtService;
-
-  @PostMapping("/placeOrder")
-  public ResponseEntity<?> placeOrder(@RequestBody PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
+// TODO
+  @PostMapping("/placeOrder")  // REMOVE IT
+  public ResponseEntity<?> placeOrder(@Valid  @RequestBody PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
     String authHeader = request.getHeader("Authorization");
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
               .body("Missing or invalid Authorization header");
     }
     String token = authHeader.substring(7);
-    if (!jwtService.validateToken(token)) {
+    int userId = placeOrderDTO.getUserId();
+    if (!jwtService.validateAllToken(token, userId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
               .body("Access Forbidden to the Endpoint");
     }
     try {
-      int userId = jwtService.getUserId(token);
-      Optional<?> response = orderService.placeOrder(placeOrderDTO.getCartItemList(), userId, placeOrderDTO.getAddress());
+      Optional<?> response = orderService.placeOrder(Optional.ofNullable(placeOrderDTO.getCartItemList()), Optional.ofNullable(placeOrderDTO.getCartId()), userId, placeOrderDTO.getAddress());
       return ResponseEntity.ok(response);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body("An error occurred while placing the order: " + e.getMessage());
     }
   }
-
+ // API/ORDER/STATUS
   @PatchMapping("/updateOrderStatus/{orderId}")
   public ResponseEntity<?> updateOrderStatus(@PathVariable int orderId, @RequestParam String status, HttpServletRequest request) {
     String authHeader = request.getHeader("Authorization");

@@ -20,6 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cartItem")
+//  TODO:  cartItem -> CART
 public class CartItemController {
   @Autowired private CartItemService cartItemService;
   @Autowired private CartService cartService;
@@ -51,7 +52,8 @@ public class CartItemController {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body("CartID does not correspond to valid userID");
   }
-
+// CART/PRDOUCTid/QUANTITY
+  // if quanitty is 0 -> delete from carlineitme
   @PatchMapping("/updateQuantity")
   public ResponseEntity<?> updateCartItem(
       @Valid @RequestBody UpdateCartItemDTO updateCartItemDTO, HttpServletRequest request) {
@@ -100,7 +102,7 @@ public class CartItemController {
     }
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized for the user");
   }
-
+// capi/cart/clearcart
   @DeleteMapping("/clearCart/{cartId}")
   public ResponseEntity<?> clearCart(@PathVariable int cartId, HttpServletRequest request) {
     String authHeader = request.getHeader("Authorization");

@@ -54,12 +54,15 @@ public class JWTService {
         }
     }
 
+
     public boolean validateAllToken(String token, int userId) {
         try {
             final int extractedUserId = extractUserId(token);
             System.out.println(extractedUserId);
             return extractedUserId == userId  && !isTokenExpired(token);
         } catch (ExpiredJwtException e) {
+
+      System.out.println("EXCEPTIION");
             throw new RuntimeException("Token is expired");
         }
     }

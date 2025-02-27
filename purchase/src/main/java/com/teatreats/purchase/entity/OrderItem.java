@@ -15,7 +15,7 @@ public class OrderItem {
 
 
     @NotNull(message = "Order ID cannot be null")
-    @ManyToOne     // many order-item are for one order
+    @ManyToOne     // many order-item are for one order //FETCH LAZY
     @JoinColumn(name="order_id", nullable = false)
     private CustomerOrder order;
 
@@ -36,4 +36,7 @@ public class OrderItem {
     private String productName;
 
     private String productDescription;
+
+    // IMAGE STORE
+
 }
