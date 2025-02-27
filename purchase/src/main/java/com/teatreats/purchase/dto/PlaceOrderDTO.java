@@ -9,7 +9,12 @@ import java.util.List;
 @Data
 public class PlaceOrderDTO {
 
-  private List<CartItem> cartItemList;
+  private List<Integer> cartItemList;
+
+  private int cartId;
+
 
   private String address;
+
+  private int userId;
 }

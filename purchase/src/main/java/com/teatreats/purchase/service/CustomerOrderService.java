@@ -9,6 +9,7 @@ import com.teatreats.purchase.repository.CartItemRepository;
 import com.teatreats.purchase.repository.CustomerOrderRepository;
 import com.teatreats.purchase.repository.OrderItemRepository;
 import io.jsonwebtoken.security.Jwks;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,12 +32,28 @@ public class CustomerOrderService {
 
   @Autowired private OrderItemRepository orderItemRepository;
 
+
   @Transactional
-  public Optional<?> placeOrder(List<CartItem> cartItemList, int userId, String address) {
+  public Optional<?> placeOrder(Optional<List<Integer>> cartItemIDs, Optional<Integer> CartId, int userId, String address) {
     Set<CartItem> outOfStockProducts = new HashSet<>();
     Double totalAmount = 0.0;
     Map<Integer, ProductDTO> productMap = new HashMap<>();
-
+    List<CartItem> cartItemList = new ArrayList<>();
+    if (cartItemIDs.isPresent()) {
+      List<Integer> cartItemids = cartItemIDs.get();
+      for (Integer cartItemId : cartItemids) {
+        System.out.println(cartItemId);
+        Optional<CartItem> cartItem = cartItemRepository.findById(cartItemId);
+        if (cartItem.isPresent()) cartItemList.add(cartItem.get());
+      }
+    }
+    else if (CartId.isPresent()){
+      cartItemList= cartItemRepository.findAllByCart_CartId(CartId.get());
+    }
+    System.out.println(cartItemList);
+    if(cartItemList.isEmpty()){
+      return Optional.of("No item  found");
+    }
     for (CartItem cartItem : cartItemList) {
       try {
         Mono<ProductDTO> productDTOMono =
@@ -51,7 +68,6 @@ public class CustomerOrderService {
         if (productDTO.getStockQuantity() < cartItem.getQuantity()) {
           outOfStockProducts.add(cartItem);
         }
-
         if(cartItemRepository.findById(cartItem.getCartItemId()).isEmpty()){
           log.error("CartItem does not exist in database");
 
@@ -146,7 +162,7 @@ public class CustomerOrderService {
                   .bodyValue(orderItem.getQuantity())
                   .retrieve()
                   .bodyToMono(ProductDTO.class)
-                  .block(); // Ensure the request is completed
+                  .block();
         }
       }
     }

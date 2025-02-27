@@ -24,7 +24,7 @@ public class CartItemService {
   @Autowired private WebClient webClient;
 
   public CartItem createCartItem(CartItem cartItem) {
-
+// TODO: FIND ALL BY PRODUCTID -> THEN CONDITIONAL
     List<CartItem> cartItemList =
         cartItemRepository.findAllByCart_CartId(cartItem.getCart().getCartId());
     for (CartItem item : cartItemList) {
@@ -111,7 +111,7 @@ public class CartItemService {
       throw new RuntimeException("Cart not found with id: " + cartId);
     }
   }
-
+// remove
   public List<CartItem> getByCartID(int cartId, int userId) {
 
       Optional<Cart> cartOptional = cartRepository.findById(cartId);
