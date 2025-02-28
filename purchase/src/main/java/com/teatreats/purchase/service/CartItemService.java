@@ -6,6 +6,7 @@ import com.teatreats.purchase.entity.Cart;
 import com.teatreats.purchase.entity.CartItem;
 import com.teatreats.purchase.repository.CartItemRepository;
 import com.teatreats.purchase.repository.CartRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
-
+@Slf4j
 @Service
 public class CartItemService {
 
@@ -25,14 +26,12 @@ public class CartItemService {
   @Autowired private WebClient webClient;
 
   public CartItem createCartItem(CartItemDTO cartItemDTO, int userId) {
-    // TODO: FIND ALL BY PRODUCTID -> THEN CONDITIONAL  -> DONE
-
     Optional<Cart> cart = cartRepository.findByUserId(userId);
     CartItem cartItem =
         cartItemRepository.findByProductIdAndCart_CartId(
             cartItemDTO.getProductId(), cart.get().getCartId());
     if (cartItem != null) {
-      cartItem.setQuantity(cartItem.getQuantity() + cartItem.getQuantity());
+      cartItem.setQuantity(cartItem.getQuantity() + cartItemDTO.getQuantity());
       return cartItemRepository.save(cartItem);
     }
 
@@ -51,13 +50,11 @@ public class CartItemService {
     if (category.equals("GIFT_SETS")) {
       discount = 10;
     }
-
     CartItem cartItem1 = new CartItem();
     cartItem1.setDiscount(discount);
     cartItem1.setQuantity(cartItemDTO.getQuantity());
     cartItem1.setProductId(cartItemDTO.getProductId());
     cartItem1.setCart(cart.get());
-
     return cartItemRepository.save(cartItem1);
   }
 
@@ -71,13 +68,16 @@ public class CartItemService {
         if (userId == cartUserId) {
           cartItemRepository.deleteById(id);
         } else {
+          log.warn( "Unauthorized: Cart does not belong to the user with id: " + userId);
           throw new RuntimeException(
               "Unauthorized: Cart does not belong to the user with id: " + userId);
         }
       } else {
+        log.warn("Cart not found with id: " + cartItem.getCart().getCartId());
         throw new RuntimeException("Cart not found with id: " + cartItem.getCart().getCartId());
       }
     } else {
+      log.warn("CartItem not found with id: " + id);
       throw new RuntimeException("CartItem not found with id: " + id);
     }
   }
@@ -101,9 +101,8 @@ public class CartItemService {
         return Optional.of(cartItemRepository.save(cartItem.get()));
       }
       else {
-        Optional.of("CARTLINEITME NOT FOUND");
+        Optional.of("Cart not found!!");
       }
-
     }
     return Optional.of("CART NOT FOUND");
 
@@ -118,6 +117,7 @@ public class CartItemService {
       Cart cart = cartOptional.get();
         cartItemRepository.deleteAllByCart_CartId(cart.getCartId());
       }else {
+        log.warn("Cart does not belong to the user with id" + userId);
         throw new RuntimeException(
             "Unauthorized: Cart does not belong to the user with id: " + userId);
       }

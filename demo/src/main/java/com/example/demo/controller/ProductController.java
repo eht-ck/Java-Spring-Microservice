@@ -98,34 +98,7 @@ public class ProductController {
     return  productService.updateProductQuantity(id, quantityToReduce);
   }
 
-//  @GetMapping("/filter-and-search")
-//  public List<Product> getAllProducts(
-//      @RequestParam(required = false) String brand,
-//      @RequestParam(required = false) String name,
-//      @RequestParam(required = false) String category,
-//      @RequestParam(required = false, defaultValue = "0") String minPriceStr,
-//      @RequestParam(required = false, defaultValue = "100000") String maxPriceStr,
-//      @RequestParam(required = false, defaultValue = "0") String minStockStr,
-//      @RequestParam(required = false, defaultValue = "100000") String maxStockStr,
-//      @RequestParam(required = false, defaultValue = "name") String sortBy,
-//      @RequestParam(required = false, defaultValue = "asc") String sortDirection,
-//      @RequestParam(required = false) String keyword) {
-//    Double minPrice = Double.parseDouble(minPriceStr);
-//    Double maxPrice = Double.parseDouble(maxPriceStr);
-//    Integer minStock = Integer.parseInt(minStockStr);
-//    Integer maxStock = Integer.parseInt(maxStockStr);
-//    return productService.getFilteredAndSearchedProducts(
-//        brand,
-//        name,
-//        category,
-//        minPrice,
-//        maxPrice,
-//        minStock,
-//        maxStock,
-//        sortBy,
-//        sortDirection,
-//        keyword);
-//  }
+
 
   @PostMapping("/filter-and-search")
   public List<Product> getAllProducts(@RequestBody ProductFilterRequest filterRequest) {

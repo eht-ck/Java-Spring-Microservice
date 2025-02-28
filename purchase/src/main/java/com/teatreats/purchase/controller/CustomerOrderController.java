@@ -6,13 +6,14 @@ import com.teatreats.purchase.service.CustomerOrderService;
 import com.teatreats.purchase.utils.VerifyTokenAndReturnUserIdUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/order/")
 public class CustomerOrderController {
@@ -25,6 +26,7 @@ public class CustomerOrderController {
           @RequestBody UpdateOrderStatusDTO orderStatusDTO, HttpServletRequest request) {
 
     if (!verifyTokenAndReturnUserIdUtil.validateAdminToken(request)) {
+      log.error("Access forbidden to the endpoint!!");
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
               .body("Access Forbidden to the Endpoint");
     }
@@ -35,6 +37,7 @@ public class CustomerOrderController {
   @GetMapping()
   public ResponseEntity<?> getAll(HttpServletRequest request) {
     if (!verifyTokenAndReturnUserIdUtil.validateAdminToken(request)) {
+      log.error("Access forbidden to the endpoint!!!");
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
               .body("Access Forbidden to the Endpoint");
     }

@@ -81,8 +81,7 @@ public class CustomerOrderService {
         }
         if (cartItemRepository.findById(cartItem.getCartItemId()).isEmpty()) {
           log.error("CartItem does not exist in database");
-
-          return Optional.of("ID NHI MILI ");
+          return Optional.of("CartItem does not exist in database ");
         }
 
         totalAmount +=
@@ -99,7 +98,11 @@ public class CustomerOrderService {
 
     if (!outOfStockProducts.isEmpty()) {
       log.warn("Out of stock products: " + outOfStockProducts);
-      return Optional.of("Some products are out of stock" + outOfStockProducts);
+      List<Integer> outOfStockProductIDs = new ArrayList<>();
+      for (CartItem item: outOfStockProducts){
+        outOfStockProductIDs.add(item.getProductId());
+      }
+      return Optional.of("Some products are out of stock" + outOfStockProductIDs);
     }
 
     CustomerOrder order = new CustomerOrder();
