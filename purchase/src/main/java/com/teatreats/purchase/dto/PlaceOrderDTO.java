@@ -14,7 +14,5 @@ public class PlaceOrderDTO {
   private int cartId;
 
 
-  private String address;
 
-  private int userId;
-}
+ }

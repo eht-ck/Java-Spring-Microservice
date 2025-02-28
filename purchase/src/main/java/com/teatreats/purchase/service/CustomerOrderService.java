@@ -1,6 +1,7 @@
 package com.teatreats.purchase.service;
 
 import com.teatreats.purchase.dto.ProductDTO;
+import com.teatreats.purchase.dto.UserDTO;
 import com.teatreats.purchase.entity.CartItem;
 import com.teatreats.purchase.entity.CustomerOrder;
 import com.teatreats.purchase.entity.OrderItem;
@@ -32,9 +33,20 @@ public class CustomerOrderService {
 
   @Autowired private OrderItemRepository orderItemRepository;
 
-
   @Transactional
-  public Optional<?> placeOrder(Optional<List<Integer>> cartItemIDs, Optional<Integer> CartId, int userId, String address) {
+  public Optional<?> placeOrder(
+      Optional<List<Integer>> cartItemIDs, Optional<Integer> CartId, int userId, String token) {
+
+    UserDTO userDTO =
+        webClient
+            .get()
+            .uri("http://localhost:8080/api/user/id/" + userId)
+            .header("Authorization", "Bearer " + token)
+            .retrieve()
+            .bodyToMono(UserDTO.class)
+            .block();
+
+    System.out.println(userDTO.getAddress());
     Set<CartItem> outOfStockProducts = new HashSet<>();
     Double totalAmount = 0.0;
     Map<Integer, ProductDTO> productMap = new HashMap<>();
@@ -46,12 +58,11 @@ public class CustomerOrderService {
         Optional<CartItem> cartItem = cartItemRepository.findById(cartItemId);
         if (cartItem.isPresent()) cartItemList.add(cartItem.get());
       }
-    }
-    else if (CartId.isPresent()){
-      cartItemList= cartItemRepository.findAllByCart_CartId(CartId.get());
+    } else if (CartId.isPresent()) {
+      cartItemList = cartItemRepository.findAllByCart_CartId(CartId.get());
     }
     System.out.println(cartItemList);
-    if(cartItemList.isEmpty()){
+    if (cartItemList.isEmpty()) {
       return Optional.of("No item  found");
     }
     for (CartItem cartItem : cartItemList) {
@@ -68,14 +79,16 @@ public class CustomerOrderService {
         if (productDTO.getStockQuantity() < cartItem.getQuantity()) {
           outOfStockProducts.add(cartItem);
         }
-        if(cartItemRepository.findById(cartItem.getCartItemId()).isEmpty()){
+        if (cartItemRepository.findById(cartItem.getCartItemId()).isEmpty()) {
           log.error("CartItem does not exist in database");
 
           return Optional.of("ID NHI MILI ");
         }
 
         totalAmount +=
-              cartItem.getQuantity() *  (productDTO.getPrice() - productDTO.getPrice() * (double) cartItem.getDiscount() / 100);
+            cartItem.getQuantity()
+                * (productDTO.getPrice()
+                    - productDTO.getPrice() * (double) cartItem.getDiscount() / 100);
 
         System.out.println("TOTAL PRICE" + totalAmount);
       } catch (Exception e) {
@@ -93,7 +106,7 @@ public class CustomerOrderService {
     order.setUserId(userId);
     order.setTotalAmount(totalAmount);
     order.setStatus(Status.PENDING);
-    order.setDeliveryAddress(address);
+    order.setDeliveryAddress(userDTO.getAddress());
 
     CustomerOrder customerOrder;
     try {
@@ -144,7 +157,6 @@ public class CustomerOrderService {
     return Optional.of("ORDER PLACED!!!!!");
   }
 
-
   public Optional<?> updateOrderStatus(int orderId, Status status) {
     Optional<CustomerOrder> order = customerOrderRepository.findById(orderId);
     if (order.isPresent()) {
@@ -157,22 +169,38 @@ public class CustomerOrderService {
         List<OrderItem> orderItemList = orderItemRepository.findAllByOrder_OrderId(orderId);
         for (OrderItem orderItem : orderItemList) {
           webClient
-                  .patch()
-                  .uri("http://localhost:8081/api/products/increaseQuantity/" + orderItem.getProductId())
-                  .bodyValue(orderItem.getQuantity())
-                  .retrieve()
-                  .bodyToMono(ProductDTO.class)
-                  .block();
+              .patch()
+              .uri(
+                  "http://localhost:8081/api/products/increaseQuantity/" + orderItem.getProductId())
+              .bodyValue(orderItem.getQuantity())
+              .retrieve()
+              .bodyToMono(ProductDTO.class)
+              .block();
         }
       }
+    }
+    else {
+      return Optional.of("order not found");
     }
     return order;
   }
 
   public List<CustomerOrder> getAllOrder() {
+    return customerOrderRepository.findAll();
+  }
 
-    return  customerOrderRepository.findAll();
+  public  Optional<?> getOrder(int orderId, int userId){
+    Optional<CustomerOrder> order = customerOrderRepository.findByOrderIdAndUserId(orderId, userId);
+    if(order.isPresent()){
+      return  order;
+    }
+    return Optional.of("No order found for you with order id " + orderId);
+
   }
 
 
+  public List<CustomerOrder> getUserAllOrder(int userId) {
+    return  customerOrderRepository.findByUserId(userId);
+
+  }
 }

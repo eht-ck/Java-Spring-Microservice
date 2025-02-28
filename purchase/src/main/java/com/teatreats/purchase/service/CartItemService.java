@@ -1,5 +1,6 @@
 package com.teatreats.purchase.service;
 
+import com.teatreats.purchase.dto.CartItemDTO;
 import com.teatreats.purchase.dto.ProductDTO;
 import com.teatreats.purchase.entity.Cart;
 import com.teatreats.purchase.entity.CartItem;
@@ -23,22 +24,24 @@ public class CartItemService {
 
   @Autowired private WebClient webClient;
 
-  public CartItem createCartItem(CartItem cartItem) {
-// TODO: FIND ALL BY PRODUCTID -> THEN CONDITIONAL
-    List<CartItem> cartItemList =
-        cartItemRepository.findAllByCart_CartId(cartItem.getCart().getCartId());
-    for (CartItem item : cartItemList) {
-      if (item.getProductId() == cartItem.getProductId()) {
-        item.setQuantity(item.getQuantity() + cartItem.getQuantity());
-        return cartItemRepository.save(item);
-      }
+  public CartItem createCartItem(CartItemDTO cartItemDTO, int userId) {
+    // TODO: FIND ALL BY PRODUCTID -> THEN CONDITIONAL  -> DONE
+
+    Optional<Cart> cart = cartRepository.findByUserId(userId);
+    CartItem cartItem =
+        cartItemRepository.findByProductIdAndCart_CartId(
+            cartItemDTO.getProductId(), cart.get().getCartId());
+    if (cartItem != null) {
+      cartItem.setQuantity(cartItem.getQuantity() + cartItem.getQuantity());
+      return cartItemRepository.save(cartItem);
     }
+
     float discount = 0.0F;
 
     Mono<ProductDTO> productDTOMono =
         webClient
             .get()
-            .uri("http://localhost:8081/api/products/" + cartItem.getProductId())
+            .uri("http://localhost:8081/api/products/" + cartItemDTO.getProductId())
             .retrieve()
             .bodyToMono(ProductDTO.class);
 
@@ -48,8 +51,14 @@ public class CartItemService {
     if (category.equals("GIFT_SETS")) {
       discount = 10;
     }
-    cartItem.setDiscount(discount);
-    return cartItemRepository.save(cartItem);
+
+    CartItem cartItem1 = new CartItem();
+    cartItem1.setDiscount(discount);
+    cartItem1.setQuantity(cartItemDTO.getQuantity());
+    cartItem1.setProductId(cartItemDTO.getProductId());
+    cartItem1.setCart(cart.get());
+
+    return cartItemRepository.save(cartItem1);
   }
 
   public void deleteCartItem(int id, int userId) {
@@ -62,7 +71,8 @@ public class CartItemService {
         if (userId == cartUserId) {
           cartItemRepository.deleteById(id);
         } else {
-          throw new RuntimeException("Unauthorized: Cart does not belong to the user with id: " + userId);
+          throw new RuntimeException(
+              "Unauthorized: Cart does not belong to the user with id: " + userId);
         }
       } else {
         throw new RuntimeException("Cart not found with id: " + cartItem.getCart().getCartId());
@@ -72,63 +82,48 @@ public class CartItemService {
     }
   }
 
-  public CartItem updateCartItemQuantity(int id, int quantity, int userId) {
-    Optional<CartItem> cartItemOptional = cartItemRepository.findById(id);
-    if (cartItemOptional.isPresent()) {
-      CartItem cartItem = cartItemOptional.get();
-      Optional<Cart> cartOptional = cartRepository.findById(cartItem.getCart().getCartId());
-      if (cartOptional.isPresent()) {
-        int cartUserId = cartOptional.get().getUserId();
-        if (userId == cartUserId) {
-          cartItem.setQuantity(quantity);
-          cartItemRepository.save(cartItem);
-          return cartItem;
-        } else {
-          throw new RuntimeException("Unauthorized: Cart does not belong to the user with id: " + userId);
+  public Optional<?> updateCartItemQuantity(int cartItemId, int quantity, int userId) {
+    System.out.println("User ID: " + userId);
+    Optional<Cart> cart = cartRepository.findByUserId(userId);
+    if (cart.isPresent()) {
+      System.out.println("Cart is present");
+      Optional<CartItem> cartItem =
+          cartItemRepository.findById(cartItemId);
+      System.out.println("CartItem: " + cartItem);
+      if (cartItem.isPresent()) {
+        if (quantity == 0) {
+          System.out.println("Quantity is 0, deleting cart item");
+          cartItemRepository.deleteById(cartItem.get().getCartItemId());
+          return Optional.of("DELETED");
         }
-      } else {
-        throw new RuntimeException("Cart not found with id: " + cartItem.getCart().getCartId());
+        cartItem.get().setQuantity(quantity);
+        System.out.println("Updated CartItem: " + cartItem);
+        return Optional.of(cartItemRepository.save(cartItem.get()));
       }
-    } else {
-      throw new RuntimeException("CartItem not found with id: " + id);
+      else {
+        Optional.of("CARTLINEITME NOT FOUND");
+      }
+
     }
+    return Optional.of("CART NOT FOUND");
+
   }
 
   @Transactional
-  public void clearCart(int cartId, int userId) {
-    Optional<Cart> cartOptional = cartRepository.findById(cartId);
-
+  public void clearCart(int userId) {
+    System.out.println(userId);
+    Optional<Cart> cartOptional = cartRepository.findByUserId(userId);
+    System.out.println(cartOptional);
     if (cartOptional.isPresent()) {
       Cart cart = cartOptional.get();
-      int cartUserId = cart.getUserId();
-
-      if (cartUserId == userId) {
-        cartItemRepository.deleteAllByCart_CartId(cartId);
-      } else {
-        throw new RuntimeException("Unauthorized: Cart does not belong to the user with id: " + userId);
+        cartItemRepository.deleteAllByCart_CartId(cart.getCartId());
+      }else {
+        throw new RuntimeException(
+            "Unauthorized: Cart does not belong to the user with id: " + userId);
       }
-    } else {
-      throw new RuntimeException("Cart not found with id: " + cartId);
     }
-  }
-// remove
-  public List<CartItem> getByCartID(int cartId, int userId) {
-
-      Optional<Cart> cartOptional = cartRepository.findById(cartId);
-      if (cartOptional.isPresent()) {
-        Cart cart = cartOptional.get();
-        int cartUserId = cart.getUserId();
-        if (cartUserId == userId) {
-          return cartItemRepository.findAllByCart_CartId(cartId);
-        } else {
-          throw new RuntimeException("Unauthorized: Cart does not belong to the user with id: " + userId);
-        }
-      } else {
-        throw new RuntimeException("Cart not found with id: " + cartId);
-      }
 
 
-  }
 
   public Optional<CartItem> getCartItem(int cartItemId) {
     return cartItemRepository.findById(cartItemId);

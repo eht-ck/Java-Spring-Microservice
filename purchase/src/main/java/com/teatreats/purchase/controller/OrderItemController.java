@@ -17,9 +17,5 @@ public class OrderItemController {
     private OrderItemService orderItemService;
 
 
-    @GetMapping("/{orderId}")
-    public List<OrderItem> getByOrderId(@PathVariable int orderId){
-        List<OrderItem> orderItemList = orderItemService.getByOrderId(orderId);
-        return  orderItemList;
-    }
+
 }

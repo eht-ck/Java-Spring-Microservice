@@ -6,6 +6,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,19 +29,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-//    @ExceptionHandler(UserAlreadyExistsException.class)
-//    public ResponseEntity<String> handleUserAlreadyExistsException(UserAlreadyExistsException e) {
-//        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<String> handleAllOtherExceptions(Exception ex) {
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                .body("An unexpected error occurred: " + ex.getMessage());
 //    }
-//
-//    @ExceptionHandler(UserNotFoundException.class)
-//    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-//    }
-
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleAllOtherExceptions(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An unexpected error occurred: " + ex.getMessage());
+    public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request) {
+        Map<String, String> errorDetails = new HashMap<>();
+        errorDetails.put("message", ex.getMessage());
+        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
