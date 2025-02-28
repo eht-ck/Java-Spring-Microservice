@@ -1,18 +1,20 @@
 package com.teatreats.purchase.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 
-@Data
+@Setter
+@Getter
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class CartItem {
@@ -23,8 +25,8 @@ public class CartItem {
 
   @NotNull(message = "Cart ID cannot be null")
   @ManyToOne
-//  @JsonIgnore
   @JoinColumn(name = "cart_id", nullable = false)
+  @JsonBackReference
   private Cart cart;
 
   @NotNull(message = "Product ID cannot be null")
@@ -38,6 +40,4 @@ public class CartItem {
   @CreatedDate private Date createdAt;
 
   @LastModifiedDate private Date updatedAt;
-
-//  private boolean inCart;
 }

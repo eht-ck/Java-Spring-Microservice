@@ -4,21 +4,27 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import java.util.Date;
 
 @Data
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int orderItemId;
 
-
     @NotNull(message = "Order ID cannot be null")
-    @ManyToOne     // many order-item are for one order //FETCH LAZY
+    @ManyToOne
     @JoinColumn(name="order_id", nullable = false)
+    @JsonBackReference
     private CustomerOrder order;
-
 
     @NotNull
     private int productId;
@@ -37,6 +43,7 @@ public class OrderItem {
 
     private String productDescription;
 
-    // IMAGE STORE
+    @CreatedDate private Date createdAt;
 
+    @LastModifiedDate private Date updatedAt;
 }

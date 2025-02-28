@@ -29,7 +29,13 @@ public class CartService {
     }
 
     public  Optional<Cart> getCartByUserId(int id){
-        return cartRepository.findByUserId(id);
+        Optional<Cart> existingCart =  cartRepository.findByUserId(id);
+        if(existingCart.isPresent()){
+            return  existingCart;
+        }
+        Cart cart = new Cart();
+        cart.setUserId(id);
+        return Optional.of(cartRepository.save(cart));
     }
 
 
