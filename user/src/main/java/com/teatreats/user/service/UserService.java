@@ -6,6 +6,7 @@ import com.teatreats.user.entity.Role;
 import com.teatreats.user.entity.User;
 import com.teatreats.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.teatreats.user.customexception.UserNotFoundException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -123,5 +125,9 @@ public class UserService {
     user.setRoles(role); // Set the role dynamically
     userRepository.save(user); // Save the updated user
     return id;
+  }
+
+  public List<User> getAll() {
+    return  userRepository.findAll();
   }
 }

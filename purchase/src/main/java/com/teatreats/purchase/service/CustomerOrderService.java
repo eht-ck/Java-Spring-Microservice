@@ -2,11 +2,9 @@ package com.teatreats.purchase.service;
 
 import com.teatreats.purchase.dto.ProductDTO;
 import com.teatreats.purchase.dto.UserDTO;
-import com.teatreats.purchase.entity.CartItem;
-import com.teatreats.purchase.entity.CustomerOrder;
-import com.teatreats.purchase.entity.OrderItem;
-import com.teatreats.purchase.entity.Status;
+import com.teatreats.purchase.entity.*;
 import com.teatreats.purchase.repository.CartItemRepository;
+import com.teatreats.purchase.repository.CartRepository;
 import com.teatreats.purchase.repository.CustomerOrderRepository;
 import com.teatreats.purchase.repository.OrderItemRepository;
 import io.jsonwebtoken.security.Jwks;
@@ -33,9 +31,10 @@ public class CustomerOrderService {
 
   @Autowired private OrderItemRepository orderItemRepository;
 
+  @Autowired private CartRepository cartRepository;
+
   @Transactional
-  public Optional<?> placeOrder(
-      Optional<List<Integer>> cartItemIDs, Optional<Integer> CartId, int userId, String token) {
+  public Optional<?> placeOrder(Optional<List<Integer>> cartItemIDs, int userId, String token) {
 
     UserDTO userDTO =
         webClient
@@ -46,25 +45,26 @@ public class CustomerOrderService {
             .bodyToMono(UserDTO.class)
             .block();
 
-    System.out.println(userDTO.getAddress());
     Set<CartItem> outOfStockProducts = new HashSet<>();
     Double totalAmount = 0.0;
     Map<Integer, ProductDTO> productMap = new HashMap<>();
-    List<CartItem> cartItemList = new ArrayList<>();
+    List<CartItem> cartItemList;
+
     if (cartItemIDs.isPresent()) {
-      List<Integer> cartItemids = cartItemIDs.get();
-      for (Integer cartItemId : cartItemids) {
-        System.out.println(cartItemId);
-        Optional<CartItem> cartItem = cartItemRepository.findById(cartItemId);
-        if (cartItem.isPresent()) cartItemList.add(cartItem.get());
-      }
-    } else if (CartId.isPresent()) {
-      cartItemList = cartItemRepository.findAllByCart_CartId(CartId.get());
+      List<Integer> cartItemIds = cartItemIDs.get();
+      cartItemList = cartItemRepository.findAllById(cartItemIds);
+      System.out.println("CHECK LIST OF CART ITEM" + cartItemList);
+    } else {
+      Optional<Cart> cartId = cartRepository.findByUserId(userId);
+      cartItemList = cartItemRepository.findAllByCart_CartId(cartId.get().getCartId());
     }
-    System.out.println(cartItemList);
+
+
     if (cartItemList.isEmpty()) {
-      return Optional.of("No item  found");
+      return Optional.of("No item found");
     }
+
+
     for (CartItem cartItem : cartItemList) {
       try {
         Mono<ProductDTO> productDTOMono =
@@ -79,17 +79,12 @@ public class CustomerOrderService {
         if (productDTO.getStockQuantity() < cartItem.getQuantity()) {
           outOfStockProducts.add(cartItem);
         }
-        if (cartItemRepository.findById(cartItem.getCartItemId()).isEmpty()) {
-          log.error("CartItem does not exist in database");
-          return Optional.of("CartItem does not exist in database ");
-        }
 
         totalAmount +=
             cartItem.getQuantity()
                 * (productDTO.getPrice()
                     - productDTO.getPrice() * (double) cartItem.getDiscount() / 100);
 
-        System.out.println("TOTAL PRICE" + totalAmount);
       } catch (Exception e) {
         log.error("Error fetching product details for product ID: " + cartItem.getProductId(), e);
         return Optional.of("Error fetching product details");
@@ -99,7 +94,7 @@ public class CustomerOrderService {
     if (!outOfStockProducts.isEmpty()) {
       log.warn("Out of stock products: " + outOfStockProducts);
       List<Integer> outOfStockProductIDs = new ArrayList<>();
-      for (CartItem item: outOfStockProducts){
+      for (CartItem item : outOfStockProducts) {
         outOfStockProductIDs.add(item.getProductId());
       }
       return Optional.of("Some products are out of stock" + outOfStockProductIDs);
@@ -135,6 +130,7 @@ public class CustomerOrderService {
       cartItemIdList.add(cartItem.getCartItemId());
 
       try {
+        System.out.println("Cart item: " + cartItem.getQuantity());
         Mono<ProductDTO> productDTOMono =
             webClient
                 .patch()
@@ -181,8 +177,7 @@ public class CustomerOrderService {
               .block();
         }
       }
-    }
-    else {
+    } else {
       return Optional.of("order not found");
     }
     return order;
@@ -192,18 +187,15 @@ public class CustomerOrderService {
     return customerOrderRepository.findAll();
   }
 
-  public  Optional<?> getOrder(int orderId, int userId){
+  public Optional<?> getOrder(int orderId, int userId) {
     Optional<CustomerOrder> order = customerOrderRepository.findByOrderIdAndUserId(orderId, userId);
-    if(order.isPresent()){
-      return  order;
+    if (order.isPresent()) {
+      return order;
     }
     return Optional.of("No order found for you with order id " + orderId);
-
   }
 
-
   public List<CustomerOrder> getUserAllOrder(int userId) {
-    return  customerOrderRepository.findByUserId(userId);
-
+    return customerOrderRepository.findByUserId(userId);
   }
 }

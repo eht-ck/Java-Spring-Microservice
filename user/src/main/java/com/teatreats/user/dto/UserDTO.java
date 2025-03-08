@@ -8,9 +8,11 @@ import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Entity
 @Data
+@CrossOrigin
 public class UserDTO {
   @Id
   @GeneratedValue(generator = "sequence-generator")
