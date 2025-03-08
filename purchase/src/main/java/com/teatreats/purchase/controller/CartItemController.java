@@ -21,7 +21,6 @@ public class CartItemController {
   @Autowired private CartItemService cartItemService;
   @Autowired private CartService cartService;
   @Autowired private VerifyTokenAndReturnUserIdUtil verifyTokenAndReturnUserIdUtil;
-
   @PostMapping
   public ResponseEntity<?> createCartItem(
           @Valid @RequestBody CartItemDTO cartItemDTO, HttpServletRequest request) {

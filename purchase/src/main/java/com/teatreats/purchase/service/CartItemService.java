@@ -83,10 +83,7 @@ public class CartItemService {
   }
 
   public Optional<?> updateCartItemQuantity(int cartItemId, int quantity, int userId) {
-    System.out.println("User ID: " + userId);
-    Optional<Cart> cart = cartRepository.findByUserId(userId);
-    if (cart.isPresent()) {
-      System.out.println("Cart is present");
+
       Optional<CartItem> cartItem =
           cartItemRepository.findById(cartItemId);
       System.out.println("CartItem: " + cartItem);
@@ -97,13 +94,12 @@ public class CartItemService {
           return Optional.of("DELETED");
         }
         cartItem.get().setQuantity(quantity);
-        System.out.println("Updated CartItem: " + cartItem);
+        System.out.println("Updated CartItem: " + cartItem.get());
         return Optional.of(cartItemRepository.save(cartItem.get()));
       }
       else {
         Optional.of("Cart not found!!");
       }
-    }
     return Optional.of("CART NOT FOUND");
 
   }

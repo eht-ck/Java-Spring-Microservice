@@ -11,8 +11,4 @@ public class PlaceOrderDTO {
 
   private List<Integer> cartItemList;
 
-  private int cartId;
-
-
-
  }

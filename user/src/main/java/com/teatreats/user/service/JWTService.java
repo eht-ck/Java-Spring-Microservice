@@ -58,7 +58,10 @@ public class JWTService {
     final String userName = extractUserName(token);
     return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
   }
+  public   int extractUserId(String token){
+    return  extractClaim(token, claims -> claims.get("userId", Integer.class));
 
+  }
   private boolean isTokenExpired(String token) {
     return extractExpiration(token).before(new Date());
   }
