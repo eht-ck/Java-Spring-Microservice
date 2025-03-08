@@ -1,8 +1,12 @@
 package com.teatreats.purchase.controller;
 
+import com.stripe.exception.StripeException;
+import com.teatreats.purchase.dto.StripeResponse;
+import com.teatreats.purchase.dto.ProductRequest;
 import com.teatreats.purchase.dto.UpdateOrderStatusDTO;
 import com.teatreats.purchase.dto.PlaceOrderDTO;
 import com.teatreats.purchase.service.CustomerOrderService;
+import com.teatreats.purchase.service.StripeService;
 import com.teatreats.purchase.utils.VerifyTokenAndReturnUserIdUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -13,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/order/")
@@ -23,14 +28,15 @@ public class CustomerOrderController {
 
   @PatchMapping("/status")
   public ResponseEntity<?> updateOrderStatus(
-          @RequestBody UpdateOrderStatusDTO orderStatusDTO, HttpServletRequest request) {
+      @RequestBody UpdateOrderStatusDTO orderStatusDTO, HttpServletRequest request) {
 
     if (!verifyTokenAndReturnUserIdUtil.validateAdminToken(request)) {
       log.error("Access forbidden to the endpoint!!");
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-              .body("Access Forbidden to the Endpoint");
+          .body("Access Forbidden to the Endpoint");
     }
-    Optional<?> order = orderService.updateOrderStatus(orderStatusDTO.getOrderId(), orderStatusDTO.getStatus());
+    Optional<?> order =
+        orderService.updateOrderStatus(orderStatusDTO.getOrderId(), orderStatusDTO.getStatus());
     return ResponseEntity.ok(order);
   }
 
@@ -39,7 +45,7 @@ public class CustomerOrderController {
     if (!verifyTokenAndReturnUserIdUtil.validateAdminToken(request)) {
       log.error("Access forbidden to the endpoint!!!");
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-              .body("Access Forbidden to the Endpoint");
+          .body("Access Forbidden to the Endpoint");
     }
     return ResponseEntity.ok(orderService.getAllOrder());
   }
@@ -58,13 +64,26 @@ public class CustomerOrderController {
 
   @PostMapping()
   public ResponseEntity<?> placeOrder(
-          @Valid @RequestBody PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
+      @Valid @RequestBody PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
     int userId = verifyTokenAndReturnUserIdUtil.validateToken(request);
-    Optional<?> response = orderService.placeOrder(
+    Optional<?> response =
+        orderService.placeOrder(
             Optional.ofNullable(placeOrderDTO.getCartItemList()),
             Optional.ofNullable(placeOrderDTO.getCartId()),
             userId,
             request.getHeader("Authorization").substring(7));
     return ResponseEntity.ok(response);
+  }
+
+  @Autowired private StripeService stripeService;
+
+  @PostMapping("/stripeCheckout")
+  public ResponseEntity<?> placeOrder(
+      @RequestBody ProductRequest productRequest) throws StripeException {
+
+
+    StripeResponse stripeResponse = stripeService.checkoutProducts(productRequest);
+
+   return  ResponseEntity.ok(stripeResponse);
   }
 }
