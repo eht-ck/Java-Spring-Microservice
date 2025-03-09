@@ -27,6 +27,7 @@ public class SpringConfig {
   @Autowired private UserDetailsService userDetailsService;
   @Autowired private JwtFilter jwtFilter;
 
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
