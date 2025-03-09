@@ -20,6 +20,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -52,8 +53,17 @@ public class UserController {
   }
 
   @GetMapping
-  public ResponseEntity<String> healthCheck() {
-    return ResponseEntity.ok("User Microservice is UP!!!");
+  public ResponseEntity<?> userInfo(HttpServletRequest request) {
+    String authHeader = request.getHeader("Authorization");
+    String token = authHeader.substring(7);
+    int userId = jwtService.extractUserId(token);
+    Optional<User> user = userService.getUserById(userId);
+    if (user.isPresent()) {
+      UserDTO userDTO = convertToDTO(user.get());
+      return ResponseEntity.ok(userDTO);
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Optional.empty());
+    }
   }
 
   @PostMapping("/signup")
@@ -156,5 +166,11 @@ public class UserController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body("An unexpected error occurred");
     }
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/all")
+  public ResponseEntity<List<User>> allUsers(){
+    return ResponseEntity.status(201).body( userService.getAll());
   }
 }

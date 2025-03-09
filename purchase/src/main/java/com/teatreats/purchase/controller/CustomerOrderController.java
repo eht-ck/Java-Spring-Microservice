@@ -76,8 +76,7 @@ public class CustomerOrderController {
     Optional<?> response =
         orderService.placeOrder(
             Optional.ofNullable(placeOrderDTO.getCartItemList()),
-            Optional.ofNullable(placeOrderDTO.getCartId()),
-            userId,
+             userId,
             request.getHeader("Authorization").substring(7));
     return ResponseEntity.ok(response);
   }

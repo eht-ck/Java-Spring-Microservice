@@ -11,12 +11,11 @@ public class PlaceOrderDTO {
 
   private List<Integer> cartItemList;
 
+
   private int cartId;
 
   private int userId;
 
   private String token;
-
-
 
  }
