@@ -7,58 +7,46 @@ import com.stripe.model.tax.Registration;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.teatreats.purchase.dto.ProductRequest;
 import com.teatreats.purchase.dto.StripeResponse;
+import com.teatreats.purchase.entity.PendingOrder;
+import com.teatreats.purchase.repository.StripeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class StripeService {
+  @Autowired
+  private StripeRepository stripeRepository;
 
   @Value("${stripe.secretKey}")
   private String secretKey;
 
-  // stripe -API
-  // -> productName , amount , quantity , currency
-  // -> return sessionId and url
-
-  public StripeResponse checkoutProducts(ProductRequest productRequest) throws StripeException {
+  public StripeResponse checkoutProducts(ProductRequest productRequest, String userId, String orderDataJson, String token) throws StripeException {
     Stripe.apiKey = secretKey;
+    String sessionId = UUID.randomUUID().toString();
+    PendingOrder pendingOrder = new PendingOrder();
+    pendingOrder.setSessionId(sessionId);
+    pendingOrder.setOrderData(orderDataJson);
+    pendingOrder.setUserId(userId);
+    pendingOrder.setToken(token);
 
-    SessionCreateParams.LineItem.PriceData.ProductData productData =
-        SessionCreateParams.LineItem.PriceData.ProductData.builder()
-            .setName(productRequest.getName())
-            .build();
+    stripeRepository.save(pendingOrder);
 
-    SessionCreateParams.LineItem.PriceData priceData =
-        SessionCreateParams.LineItem.PriceData.builder()
-            .setCurrency(
-                productRequest.getCurrency() != null ? productRequest.getCurrency() : "USD")
-            .setUnitAmount(productRequest.getAmount())
-            .setProductData(productData)
-            .build();
-
-    SessionCreateParams.LineItem lineItem =
-        SessionCreateParams.LineItem.builder()
-            .setQuantity(productRequest.getQuantity())
-            .setPriceData(priceData)
-            .build();
-
-    SessionCreateParams params =
-        SessionCreateParams.builder()
+    SessionCreateParams params = SessionCreateParams.builder()
             .setMode(SessionCreateParams.Mode.PAYMENT)
-            .setSuccessUrl("http://localhost:8080/success")
-            .setCancelUrl("http://localhost:8080/cancel")
-            .addLineItem(lineItem)
+            .setSuccessUrl("http://localhost:8082/api/order/stripeSuccess?sessionId=" + sessionId)
+            .setCancelUrl("http://localhost:8082/api/order/stripeCancel")
             .build();
 
     Session session = Session.create(params);
 
-
-
     return StripeResponse.builder()
-        .status("SUCCESS")
-        .message("Payment session created ")
-        .sessionId(session.getId())
-        .sessionUrl(session.getUrl())
-        .build();
+            .status("SUCCESS")
+            .message("Payment session created")
+            .sessionId(session.getId())
+            .sessionUrl(session.getUrl())
+            .build();
   }
 }

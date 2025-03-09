@@ -13,6 +13,10 @@ public class PlaceOrderDTO {
 
   private int cartId;
 
+  private int userId;
+
+  private String token;
+
 
 
  }
