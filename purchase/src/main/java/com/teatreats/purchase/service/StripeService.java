@@ -25,7 +25,39 @@ public class StripeService {
 
   public StripeResponse checkoutProducts(ProductRequest productRequest, String userId, String orderDataJson, String token) throws StripeException {
     Stripe.apiKey = secretKey;
-    String sessionId = UUID.randomUUID().toString();
+
+    SessionCreateParams.LineItem.PriceData.ProductData productData =
+        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+            .setName(productRequest.getName())
+            .build();
+
+    // Create new line item with the above product data and associated price
+    SessionCreateParams.LineItem.PriceData priceData =
+        SessionCreateParams.LineItem.PriceData.builder()
+            .setCurrency(
+                productRequest.getCurrency() != null ? productRequest.getCurrency() : "USD")
+            .setUnitAmount(productRequest.getAmount())
+            .setProductData(productData)
+            .build();
+
+    // Create new line item with the above price data
+    SessionCreateParams.LineItem lineItem =
+        SessionCreateParams.LineItem.builder()
+            .setQuantity(productRequest.getQuantity())
+            .setPriceData(priceData)
+            .build();
+    SessionCreateParams params = SessionCreateParams.builder()
+            .setMode(SessionCreateParams.Mode.PAYMENT)
+            .setSuccessUrl("http://localhost:3000/orderplaced")
+            .setCancelUrl("http://localhost:8082/api/order/stripeCancel")
+            .addLineItem(lineItem)
+            .build();
+
+    // builder pattern -> lombok
+
+    Session session = Session.create(params);
+    System.out.println("ORDER JSON: " + orderDataJson);
+    String sessionId = session.getId();
     PendingOrder pendingOrder = new PendingOrder();
     pendingOrder.setSessionId(sessionId);
     pendingOrder.setOrderData(orderDataJson);
@@ -33,15 +65,6 @@ public class StripeService {
     pendingOrder.setToken(token);
 
     stripeRepository.save(pendingOrder);
-
-    SessionCreateParams params = SessionCreateParams.builder()
-            .setMode(SessionCreateParams.Mode.PAYMENT)
-            .setSuccessUrl("http://localhost:8082/api/order/stripeSuccess?sessionId=" + sessionId)
-            .setCancelUrl("http://localhost:8082/api/order/stripeCancel")
-            .build();
-
-    Session session = Session.create(params);
-
     return StripeResponse.builder()
             .status("SUCCESS")
             .message("Payment session created")

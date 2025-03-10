@@ -14,6 +14,7 @@ import lombok.Data;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Map;
 import java.util.Random;
 
 @Data
@@ -28,7 +29,7 @@ public class Product {
   @Size(max = 100, message = "Name should not exceed 100 characters")
   private String name;
 
-  @Size(max = 500, message = "Description should not exceed 500 characters")
+  @Size(max = 50000, message = "Description should not exceed 500 characters")
   private String description;
 
   @Indexed
@@ -56,6 +57,26 @@ public class Product {
   }
 
   private String imageURL;
+
+  public Map<String, String> getCustomFields() {
+    return customFields;
+  }
+
+  public void setCustomFields(Map<String, String> customFields) {
+    this.customFields = customFields;
+  }
+
+  private Map<String, String> customFields;
+
+  public boolean isFeatured() {
+    return featured;
+  }
+
+  public void setFeatured(boolean featured) {
+    this.featured = featured;
+  }
+
+  private boolean featured;
 
   public int getId() {
     return id;
