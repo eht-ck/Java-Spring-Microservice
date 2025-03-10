@@ -11,6 +11,7 @@ import io.jsonwebtoken.security.Jwks;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -196,6 +197,5 @@ public class CustomerOrderService {
   }
 
   public List<CustomerOrder> getUserAllOrder(int userId) {
-    return customerOrderRepository.findByUserId(userId);
-  }
+    return customerOrderRepository.findByUserId(userId, Sort.by(Sort.Direction.DESC, "orderDate"));  }
 }

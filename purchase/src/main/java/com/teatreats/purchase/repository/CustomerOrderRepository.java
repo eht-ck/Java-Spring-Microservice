@@ -1,6 +1,7 @@
 package com.teatreats.purchase.repository;
 
 import com.teatreats.purchase.entity.CustomerOrder;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,6 +14,10 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, In
 
 
     List<CustomerOrder> findByUserId(int userId);
+
+
+    List<CustomerOrder> findByUserId(int userId, Sort sort);
+
 }
 
 
