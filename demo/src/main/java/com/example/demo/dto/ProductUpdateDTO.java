@@ -27,7 +27,7 @@ public class ProductUpdateDTO {
   @Min(value = 0, message = "Stock quantity must be zero or greater")
   private Integer stockQuantity;
 
-  @Size(max = 500, message = "Description should not exceed 500 characters")
+  @Size(max = 50000, message = "Description should not exceed 50000 characters")
   private String description;
 
   public String getBrand() {

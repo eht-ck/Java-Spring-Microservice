@@ -12,4 +12,6 @@ public class ProductRequest {
     private Long quantity;
     private String name;
     private String currency;
+
+    private  String orderDataJson;
 }
