@@ -11,6 +11,8 @@ import io.jsonwebtoken.security.Jwks;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -184,8 +186,8 @@ public class CustomerOrderService {
     return order;
   }
 
-  public List<CustomerOrder> getAllOrder() {
-    return customerOrderRepository.findAll();
+  public Page<CustomerOrder> getAllOrders(Pageable pageable) {
+    return customerOrderRepository.findAll(pageable);
   }
 
   public Optional<?> getOrder(int orderId, int userId) {
