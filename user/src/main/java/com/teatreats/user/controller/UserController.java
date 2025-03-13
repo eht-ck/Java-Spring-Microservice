@@ -70,14 +70,15 @@ public class UserController {
   public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
     try {
       user.setRoles(Role.USER);
-      User registeredUser = userService.registerUser(user);
-      UserDTO userDTO = new UserDTO();
-      userDTO.setUserId(registeredUser.getUserId());
-      userDTO.setUserName(registeredUser.getUserName());
-      userDTO.setEmail((registeredUser.getEmail()));
-      userDTO.setAddress(registeredUser.getAddress());
-      userDTO.setRoles(registeredUser.getRoles());
-      return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
+      return  ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(user));
+//      User registeredUser = userService.registerUser(user);
+//      UserDTO userDTO = new UserDTO();
+//      userDTO.setUserId(registeredUser.getUserId());
+//      userDTO.setUserName(registeredUser.getUserName());
+//      userDTO.setEmail((registeredUser.getEmail()));
+//      userDTO.setAddress(registeredUser.getAddress());
+//      userDTO.setRoles(registeredUser.getRoles());
+//      return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
     } catch (UserAlreadyExistsException e) {
       return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }

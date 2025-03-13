@@ -27,7 +27,7 @@ public class UserService {
   private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
   //    @Transactional
-  public User registerUser(User user) {
+  public String registerUser(User user) {
     try {
       if (userRepository.existsByUserName(user.getUserName())) {
         throw new UserAlreadyExistsException("Username already exists");
@@ -36,7 +36,9 @@ public class UserService {
         throw new UserAlreadyExistsException("Email already exists");
       }
       user.setPassword(encoder.encode(user.getPassword()));
-      return userRepository.save(user);
+      User createdUser =  userRepository.save(user);
+      return jwtService.generateToken(createdUser.getUserName(), createdUser.getRoles(), createdUser.getUserId());
+
     } catch (Exception e) {
       // Log the exception
       e.printStackTrace();

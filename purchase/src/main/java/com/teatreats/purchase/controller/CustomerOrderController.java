@@ -3,15 +3,9 @@ package com.teatreats.purchase.controller;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
-import com.stripe.model.EventDataObjectDeserializer;
-import com.stripe.model.StripeObject;
 import com.stripe.net.Webhook;
 import com.stripe.model.checkout.Session;
-
-import com.teatreats.purchase.dto.StripeResponse;
-import com.teatreats.purchase.dto.ProductRequest;
-import com.teatreats.purchase.dto.UpdateOrderStatusDTO;
-import com.teatreats.purchase.dto.PlaceOrderDTO;
+import com.teatreats.purchase.dto.*;
 import com.teatreats.purchase.entity.CustomerOrder;
 import com.teatreats.purchase.entity.PendingOrder;
 import com.teatreats.purchase.repository.StripeRepository;
@@ -78,17 +72,18 @@ public class CustomerOrderController {
 
   @GetMapping("/all")
   public ResponseEntity<?> getAll(
-          HttpServletRequest request,
-          @RequestParam(defaultValue = "0") int page,
-          @RequestParam(defaultValue = "10") int size) {
+      HttpServletRequest request,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
 
     if (!verifyTokenAndReturnUserIdUtil.validateAdminToken(request)) {
       log.error("Access forbidden to the endpoint!!!");
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-              .body("Access Forbidden to the Endpoint");
+          .body("Access Forbidden to the Endpoint");
     }
 
-    Page<CustomerOrder> orders = orderService.getAllOrders(PageRequest.of(page, size, Sort.by("orderDate").descending()));
+    Page<CustomerOrder> orders =
+        orderService.getAllOrders(PageRequest.of(page, size, Sort.by("orderDate").descending()));
     return ResponseEntity.ok(orders);
   }
 
@@ -123,10 +118,16 @@ public class CustomerOrderController {
     }
   }
 
+  @PostMapping("/stockCheck")
+  public Optional<String> checkStockItem(
+          @RequestBody PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
+    int userId = verifyTokenAndReturnUserIdUtil.validateToken(request);
+    return orderService.checkCartItems(Optional.ofNullable(placeOrderDTO.getCartItemList()), userId);
+  }
   @PostMapping("/stripeWebhook")
   public ResponseEntity<String> handleStripeWebhook(
       @RequestBody String payload, @RequestHeader("Stripe-Signature") String sigHeader) {
-
+    System.out.println("here");
     try {
       Event event =
           Webhook.constructEvent(payload, sigHeader, "whsec_fG1TRw95AH85U5qtaTcHeymDZps3K8VG");

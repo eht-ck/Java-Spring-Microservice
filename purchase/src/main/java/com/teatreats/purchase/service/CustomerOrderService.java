@@ -200,4 +200,52 @@ public class CustomerOrderService {
 
   public List<CustomerOrder> getUserAllOrder(int userId) {
     return customerOrderRepository.findByUserId(userId, Sort.by(Sort.Direction.DESC, "orderDate"));  }
+
+
+
+  public Optional<String> checkCartItems(Optional<List<Integer>> cartItemIdList, int userId) {
+    List<CartItem> cartItemList;
+
+    if (cartItemIdList.isPresent()) {
+      List<Integer> cartItemIds = cartItemIdList.get();
+      cartItemList = cartItemRepository.findAllById(cartItemIds);
+      System.out.println("CHECK LIST OF CART ITEM" + cartItemList);
+    } else {
+      Optional<Cart> cartId = cartRepository.findByUserId(userId);
+      cartItemList = cartItemRepository.findAllByCart_CartId(cartId.get().getCartId());
+    }
+    List<String> outOfStockProducts = new ArrayList<>();
+    Map<Integer, ProductDTO> productMap = new HashMap<>();
+    double totalAmount = 0.0;
+
+    for (CartItem cartItem : cartItemList) {
+      try {
+        ProductDTO productDTO =
+                webClient
+                        .get()
+                        .uri("http://localhost:8081/api/products/" + cartItem.getProductId())
+                        .retrieve()
+                        .bodyToMono(ProductDTO.class).block();
+         productMap.put(cartItem.getProductId(), productDTO);
+
+        if (productDTO.getStockQuantity() < cartItem.getQuantity()) {
+          outOfStockProducts.add(productDTO.getName());
+        }
+
+
+
+      } catch (Exception e) {
+        log.error("Error fetching product details for product ID: " + cartItem.getProductId(), e);
+        return Optional.of("Error fetching product details");
+      }
+    }
+
+    if (!outOfStockProducts.isEmpty()) {
+      log.warn("Out of stock products: " + outOfStockProducts);
+
+      return Optional.of("Please remove out of stock items " + (outOfStockProducts).toString() + " to proceed.");
+    }
+
+    return Optional.empty();
+  }
 }
