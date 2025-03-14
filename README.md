@@ -18,7 +18,7 @@ This project consists of three microservices:
 1. **Clone the repository:**
 
     ```bash
-   https://github.com/eht-ck/Java-Spring-Microservice
+    git clone https://github.com/eht-ck/Java-Spring-Microservice
     cd Java-Spring-Microservice
     ```
 
@@ -92,13 +92,17 @@ To use the Purchase Service with Stripe, you need to expose it to the public int
 
 - **Port:** 8080
 - **Description:** Manages user information and authentication.
+- **Database:** MySQL
 
 ### Demo (Product) Service
 
 - **Port:** 8081
 - **Description:** Manages product information and inventory.
+- **Database:** MongoDB
 
 ### Purchase Service
 
 - **Port:** 8082
 - **Description:** Handles purchase transactions and integrates with Stripe for payment processing.
+- **Database:** MySQL
+
