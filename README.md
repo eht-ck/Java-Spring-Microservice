@@ -31,21 +31,21 @@ This project consists of three microservices:
 3. **Run the User Service:**
 
     ```bash
-    cd user-service
+    cd user
     mvn spring-boot:run
     ```
 
 4. **Run the Demo (Product) Service:**
 
     ```bash
-    cd ../demo-service
+    cd ../demo
     mvn spring-boot:run
     ```
 
 5. **Run the Purchase Service:**
 
     ```bash
-    cd ../purchase-service
+    cd ../purchase
     mvn spring-boot:run
     ```
 
