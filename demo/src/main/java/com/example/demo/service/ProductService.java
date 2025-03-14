@@ -36,30 +36,12 @@ public class ProductService {
     return productRepository.save(product);
   }
 
-  public Product updateProduct(int id, Product productDetails) {
-    Product product = getProductById(id);
 
-    product.setName(productDetails.getName());
-    product.setDescription(productDetails.getDescription());
-    product.setPrice(productDetails.getPrice());
-    product.setCategory(productDetails.getCategory());
-    product.setStockQuantity(productDetails.getStockQuantity());
-    product.setBrand(productDetails.getBrand());
-
-    return productRepository.save(product);
-  }
 
   public void deleteProduct(int id) {
     Product product = getProductById(id);
     productRepository.delete(product);
   }
-
-  //    public List<Product> getFilteredProducts(String brand, String name, String category, Double
-  // minPrice, Double maxPrice, Integer minStock, Integer maxStock, String sortBy, String
-  // sortDirection) {
-  //        return productRepository.getFilteredProducts(brand, name, category, minPrice, maxPrice,
-  // minStock, maxStock, sortBy, sortDirection);
-  //    }
 
   public Product updateProductById(
       int id,
@@ -95,10 +77,6 @@ public class ProductService {
     return productRepository.save(product);
   }
 
-  //    public List<Product> searchProducts(String keyword) {
-  //      return  productRepository.searchProducts(keyword);
-  //    }
-
   public List<Product> getFilteredAndSearchedProducts(
       String brand,
       String name,
@@ -123,8 +101,6 @@ public class ProductService {
         keyword);
   }
 
-
-
   public Product updateProductQuantity(int id, int quantityToReduce) {
     Optional<Product> productOptional = productRepository.findById(id);
     if (productOptional.isPresent()) {
@@ -140,7 +116,6 @@ public class ProductService {
     }
   }
 
-
   public Product increaseProductQuantity(int id, int quantityToIncrease) {
     Optional<Product> productOptional = productRepository.findById(id);
     if (productOptional.isPresent()) {
@@ -152,5 +127,4 @@ public class ProductService {
       throw new ResourceNotFoundException("Product ID " + id + " not found");
     }
   }
-
 }
