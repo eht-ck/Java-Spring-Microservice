@@ -75,6 +75,9 @@ public class UserService {
       }
       user.setUserName(updateUserDTO.getUpdatedUserName());
     }
+    if (userRepository.existsByEmail(updateUserDTO.getEmail()) && !user.getEmail().equals(updateUserDTO.getEmail() )) {
+      throw new UserAlreadyExistsException("Email already exists");
+    }
     user.setEmail(updateUserDTO.getEmail());
     user.setAddress(updateUserDTO.getAddress());
     return userRepository.save(user);
