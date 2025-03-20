@@ -31,8 +31,7 @@ public class StripeService {
             .setName(productRequest.getName())
             .build();
 
-    // Create new line item with the above product data and associated price
-    SessionCreateParams.LineItem.PriceData priceData =
+     SessionCreateParams.LineItem.PriceData priceData =
         SessionCreateParams.LineItem.PriceData.builder()
             .setCurrency(
                 productRequest.getCurrency() != null ? productRequest.getCurrency() : "USD")
@@ -40,8 +39,7 @@ public class StripeService {
             .setProductData(productData)
             .build();
 
-    // Create new line item with the above price data
-    SessionCreateParams.LineItem lineItem =
+     SessionCreateParams.LineItem lineItem =
         SessionCreateParams.LineItem.builder()
             .setQuantity(productRequest.getQuantity())
             .setPriceData(priceData)
@@ -56,8 +54,7 @@ public class StripeService {
     // builder pattern -> lombok
 
     Session session = Session.create(params);
-    System.out.println("ORDER JSON: " + orderDataJson);
-    String sessionId = session.getId();
+     String sessionId = session.getId();
     PendingOrder pendingOrder = new PendingOrder();
     pendingOrder.setSessionId(sessionId);
     pendingOrder.setOrderData(orderDataJson);

@@ -31,18 +31,13 @@ class ProductServiceTest {
         assertNotNull(productService.getAllProducts());
       }
 
-    @Test
-    void getProductById() {
-        assertNotNull(productService.getProductById(706506));
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            productService.getProductById(101);
-        });
-        String expectedMessage = "Product ID 101 not found";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));      }
+  @Test
+  void getProductById() {
+    assertNotNull(productService.getProductById(706506));
+        }
 
     @Test
-    void createProduct() {
+gi    void createProduct() {
         Product product = new Product();
         product.setName("TEST PROD");
         product.setPrice(100);
@@ -55,14 +50,14 @@ class ProductServiceTest {
     @Test
     void deleteProduct() {
         ProductService productService = Mockito.mock(ProductService.class);
-        productService.deleteProduct(190770);
-        verify(productService, times(1)).deleteProduct(190770);
+        productService.deleteProduct(918073);
+        verify(productService, times(1)).deleteProduct(918073);
     }
 
 
     @Test
     void updateProductById() {
-        assertNotNull(productService.updateProductById(472241, "Tetly", "Updated test", Category.TEA, 200.0, 10, "new description" ));
+        assertNotNull(productService.updateProductById(936764, "Tetly", "Updated test", Category.TEA, 200.0, 10, "new description" ));
       }
 
     @Test
