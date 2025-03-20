@@ -104,7 +104,6 @@ public class CustomerOrderController {
       @RequestBody ProductRequest productRequest, HttpServletRequest request) {
     try {
       String userId = String.valueOf((verifyTokenAndReturnUserIdUtil.validateToken(request)));
-      System.out.println(productRequest);
       StripeResponse stripeResponse =
           stripeService.checkoutProducts(
               productRequest,
@@ -120,10 +119,12 @@ public class CustomerOrderController {
 
   @PostMapping("/stockCheck")
   public Optional<String> checkStockItem(
-          @RequestBody PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
+      @RequestBody PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
     int userId = verifyTokenAndReturnUserIdUtil.validateToken(request);
-    return orderService.checkCartItems(Optional.ofNullable(placeOrderDTO.getCartItemList()), userId);
+    return orderService.checkCartItems(
+        Optional.ofNullable(placeOrderDTO.getCartItemList()), userId);
   }
+
   @PostMapping("/stripeWebhook")
   public ResponseEntity<String> handleStripeWebhook(
       @RequestBody String payload, @RequestHeader("Stripe-Signature") String sigHeader) {
@@ -134,32 +135,25 @@ public class CustomerOrderController {
       if ("checkout.session.completed".equals(event.getType())) {
         Session session = (Session) event.getDataObjectDeserializer().getObject().get();
         String sessionId = session.getId();
-
-        System.out.println("Session ID: " + sessionId);
         Optional<PendingOrder> pendingOrderOptional = stripeRepository.findById(sessionId);
-
         if (!pendingOrderOptional.isPresent()) {
-          System.out.println("NO ORDER PRESENT");
+          log.info("NO ORDER PRESENT");
           return ResponseEntity.badRequest().body("Order not found!");
         }
-
         PendingOrder pendingOrder = pendingOrderOptional.get();
         String orderDataJson = pendingOrder.getOrderData();
-        System.out.println(orderDataJson);
+        log.info(orderDataJson);
         JSONObject jsonObject = new JSONObject(orderDataJson);
-
         JSONArray jsonArray = jsonObject.getJSONArray("cartItemList");
         List<Integer> cartItemList = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
           cartItemList.add(jsonArray.getInt(i));
         }
-        System.out.println(cartItemList);
         orderService.placeOrder(
             Optional.ofNullable(cartItemList),
             Integer.parseInt(pendingOrder.getUserId()),
             pendingOrder.getToken());
-        System.out.println("order placed");
-
+        log.info("Order Placed !!!!");
         pendingOrder.setStatus("COMPLETED");
         stripeRepository.save(pendingOrder);
       }

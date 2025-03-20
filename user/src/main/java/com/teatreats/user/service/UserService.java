@@ -40,7 +40,7 @@ public class UserService {
       return jwtService.generateToken(createdUser.getUserName(), createdUser.getRoles(), createdUser.getUserId());
 
     } catch (Exception e) {
-      // Log the exception
+
       e.printStackTrace();
       throw e;
     }
@@ -52,10 +52,11 @@ public class UserService {
 
   public String verify(User user) {
     try {
-      String userName = user.getUserName();
+       String userName = user.getUserName();
       Authentication authentication =
           authManager.authenticate(
               new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword()));
+
       if (authentication.isAuthenticated()) {
         User user1 = userRepository.findByUserName(userName);
         return jwtService.generateToken(user.getUserName(), user1.getRoles(), user1.getUserId());
